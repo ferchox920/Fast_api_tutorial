@@ -1,12 +1,14 @@
-from sqlalchemy import Column, Integer, String
-from app.db.database import engine
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import Mapped, mapped_column, declarative_base
 
 Base = declarative_base()
 
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), nullable=False)
-    email = Column(String(100), unique=True, index=True, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(nullable=False)
+    email: Mapped[str] = mapped_column(unique=True, index=True, nullable=False)
+    password: Mapped[str] = mapped_column(nullable=False)  # Aquí vamos a guardar el hash
+    verified: Mapped[bool] = mapped_column(default=False)
+    access_token: Mapped[str] = mapped_column(nullable=True)
+    refresh_token: Mapped[str] = mapped_column(nullable=True)
