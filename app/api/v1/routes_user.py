@@ -1,9 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+from app.core.security import admin_required
 from app.db.session import get_db
 from app.services import user_service
 from app.schemas.user import UserCreate, UserOut, UserUpdate
+from uuid import UUID
+
 
 router = APIRouter()
 
@@ -19,14 +22,14 @@ def list_users(db: Session = Depends(get_db)):
     return user_service.get_users(db)
 
 @router.get("/{user_id}", response_model=UserOut)
-def get_user(user_id: int, db: Session = Depends(get_db)):
+def get_user(user_id: UUID, db: Session = Depends(get_db)):
     user = user_service.get_user_by_id(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     return user
 
 @router.put("/{user_id}", response_model=UserOut)
-def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):
+def update_user(user_id: UUID, user: UserUpdate, db: Session = Depends(get_db)):
     try:
         updated_user = user_service.update_user(db, user_id, user)
         if not updated_user:
@@ -36,8 +39,8 @@ def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.delete("/{user_id}")
-def delete_user(user_id: int, db: Session = Depends(get_db)):
+def delete_user(user_id: UUID, db: Session = Depends(get_db), current_user=Depends(admin_required)):
     deleted_user = user_service.delete_user(db, user_id)
     if not deleted_user:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        raise HTTPException(status_code=404, detail="Usuario no encontrado o ya eliminado")
     return {"message": "Usuario eliminado correctamente"}

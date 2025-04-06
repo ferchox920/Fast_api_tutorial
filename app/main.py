@@ -1,8 +1,14 @@
 from fastapi import FastAPI
 from app.api.v1 import routes_user, routes_auth
 from app.db.init_db import init_db
+import os
+from app.db.database import Base, engine
 
-init_db()
+if os.getenv("RESET_DB", "false").lower() == "true":
+    print("Reiniciando la base de datos...")
+    Base.metadata.drop_all(bind=engine)  # Borra TODAS las tablas que estén registradas en Base
+    print("Tablas borradas, ahora se vuelven a crear...")
+    Base.metadata.create_all(bind=engine)
 
 
 app = FastAPI(
